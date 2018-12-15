@@ -2,16 +2,12 @@
 import sys
 import os
 import copy
-def dump(obj,str):
-	print(str + " = " + obj)
-
+import shutil
+import re
 def DoFile(allfile):
 	#print allfile
 	if len(allfile) == 0 :
 		return
-	global G_MOS
-	global G_str
-	global G_rstr
 	ALLFile = copy.deepcopy(allfile)
 	for i in range(0,len(ALLFile)):#
 			ALLFile[i] = ALLFile[i].replace("\\","/")
@@ -44,6 +40,66 @@ def DoFile(allfile):
 		for n in range(0,len(ALLFile)):
 			file = ALLFile[n][:ALLFile[n].rfind("/")+1]+allfile[n].replace(G_str,G_rstr)
 			os.rename(ALLFile[n],file)
+	elif G_MOS == 4:
+		for n in range(0,len(ALLFile)):
+			hz = os.path.splitext(allfile[n])[1]
+			file=""
+			if G_qname :
+				file = ALLFile[n][:ALLFile[n].rfind("/")+1]+G_qname+"img_"+str(n+1)+hz
+			else:
+				file = ALLFile[n][:ALLFile[n].rfind("/")+1]+"img_"+str(n+1)+hz
+			print ALLFile[n],file
+			os.rename(ALLFile[n],file)
+	elif G_MOS == 5:
+		for n in range(0,len(ALLFile)):
+			hz = os.path.splitext(allfile[n])[1]
+			file=""
+			if G_qname in allfile[n] :
+				file = ALLFile[n][:ALLFile[n].rfind("/")+1]+allfile[n][:allfile[n].find(G_qname)]+hz
+				os.rename(ALLFile[n],file)
+	elif G_MOS == 6:
+		for n in range(0,len(ALLFile)):
+			hz = os.path.splitext(allfile[n])[1]
+			file=""
+			if G_qname in allfile[n] :
+				l = len(G_qname)
+				file = ALLFile[n][:ALLFile[n].rfind("/")+1]+allfile[n][allfile[n].find(G_qname):]
+				os.rename(ALLFile[n],file)
+	elif G_MOS == 7:
+		f = open("./in.txt")
+		ff = f.read()
+		f.close()
+		if os.path.isdir(G_dir+"/out"):
+			pass
+		else:
+			os.mkdir(G_dir+"/out")
+		r1 = re.compile(r'\w*\s*')
+		alldata =r1.findall(ff)
+		print alldata
+		print G_dir
+		for n in range(0,len(ALLFile)):
+			# print n
+			for a in alldata:
+				# print a
+				a = a.replace(" ","")
+				if a == "":
+					continue
+				if a in ALLFile[n]:
+					# print "aaaa"
+					if os.path.exists(G_dir+"/out/"+allfile[n]):
+						os.remove(G_dir+"/out/"+allfile[n])	
+					shutil.copyfile(ALLFile[n],G_dir+"/out/"+allfile[n])
+					os.remove(ALLFile[n])
+					break
+		# for n in range(0,len(ALLFile)):
+		# 	hz = os.path.splitext(allfile[n])[1]
+		# 	file=""
+		# 	if G_qname in allfile[n] :
+		# 		l = len(G_qname)
+		# 		file = ALLFile[n][:ALLFile[n].rfind("/")+1]+allfile[n][allfile[n].find(G_qname):]
+		# 		os.rename(ALLFile[n],file)
+			
+			
 def dirlist(path):  
 	allfile = []
 	filelist =  os.listdir(path)
@@ -53,14 +109,15 @@ def dirlist(path):
 			dirlist(filepath)
 		else:  
 			allfile.append(filepath) 
-	DoFile(allfile)	
+	DoFile(allfile)
 def main():
-	print(u"要处理的模式：\n1、删除相同前缀\n2、添加前缀\n3、替换相应字符串")
+	print(u"要处理的模式（默认1）：\n1、删除相同前缀\n2、添加前缀\n3、替换相应字符串\n4、自动命名(img_xx)\n5、删除指定字符串之后的字符串\n6、删除指定字符串之前的字符串\n7、挑出指定名字文件")
 	num = raw_input()
 	global G_MOS
 	global G_qname
 	global G_str
 	global G_rstr
+	global G_dir
 	if num == '1' :
 		G_MOS = 1
 	elif num == '2':
@@ -73,8 +130,27 @@ def main():
 		G_str = raw_input()
 		print(u"请输入替换的字符串：")
 		G_rstr = raw_input()
+	elif num == '4':
+		G_MOS = 4
+		print(u"请输入添加的前缀：")
+		G_qname = raw_input()
+	elif num == '5':
+		G_MOS = 5
+		print(u"请输入指定字符串：")
+		G_qname = raw_input()
+	elif num == '6':
+		G_MOS = 6
+		print(u"请输入指定字符串：")
+		G_qname = raw_input()
+	elif num == '7':
+		G_MOS = 7
+		print(u"准备好in.txt...")
+		# G_qname = raw_input()
+	else:
+		G_MOS = '1'
 	print(u"请输入处理路径：")
 	dir = raw_input()
+	G_dir = dir
 	dirlist(dir)
 	
 		

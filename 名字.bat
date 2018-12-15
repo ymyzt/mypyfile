@@ -1,0 +1,3 @@
+
+python doname.py 
+pause

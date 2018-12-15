@@ -1,0 +1,3 @@
+
+python finderrlog.py 
+pause
