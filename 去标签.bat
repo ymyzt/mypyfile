@@ -1,3 +1,0 @@
-
-python delF.py 
-pause
